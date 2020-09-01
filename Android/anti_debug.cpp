@@ -31,6 +31,7 @@ void* ThreadConsumer(void*){
 
     /* 1) init pipe */
     close(pipefd[1]); // close를 read에 앞서 하면 read에서 eof가 나옴 ( 차라리 실제 사용에서는 열어두는게 나을듯. ), 그래도 -1나오는 경우있네.. => 원본에서는 일부러 닫은듯.. fork우회방지.
+        // 이거 fork 후 close를 하지 않고, 일단 close 하고 fork되서 그런걸수도.. ( 그리고 코드상 자식의 write가 순서상 먼저오게.. )
     sleep(4);
     read(pipefd[0], &current_tracerpid, 4);
 
