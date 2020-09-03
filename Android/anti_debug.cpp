@@ -30,8 +30,7 @@ void* ThreadConsumer(void*){
     int current_tracerpid = -1;
 
     /* 1) init pipe */
-    close(pipefd[1]); // close를 read에 앞서 하면 read에서 eof가 나옴 ( 차라리 실제 사용에서는 열어두는게 나을듯. ), 그래도 -1나오는 경우있네.. => 원본에서는 일부러 닫은듯.. fork우회방지.
-        // 이거 fork 후 close를 하지 않고, 일단 close 하고 fork되서 그런걸수도.. ( 그리고 코드상 자식의 write가 순서상 먼저오게.. )
+    close(pipefd[1]); 
     sleep(4);
     read(pipefd[0], &current_tracerpid, 4);
 
@@ -71,7 +70,10 @@ void anti_debugging(){
     pipe(pipefd); // pipe는 fork 후 close가 정석 근데 ref에서는 잘못된게 아닌가 싶네..
     sprintf(status_file_name, "/proc/%d/status",parent_pid);
 
-    /* 2) make thread => 예외처리는 일단 생략*/
+    /* 2) make thread 
+    *     - 예외처리는 일단 생략
+    *     - 지금 thread 생성 위치 잘못됨,, 이경우 fork 전에 thread 생성 => close pipe => read eof 순으로 진행.. 종료..  
+    */
     pthread_attr_init(&attrib);
     pthread_attr_setdetachstate(&attrib, PTHREAD_CREATE_DETACHED);
     pthread_create(&thr,&attrib,ThreadConsumer,(void*)NULL);
