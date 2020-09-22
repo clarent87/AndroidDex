@@ -30,7 +30,8 @@ void* ThreadConsumer(void*){
     int current_tracerpid = -1;
 
     /* 1) init pipe */
-    close(pipefd[1]); 
+    close(pipefd[1]);  // 이부분 문제임.. 코드상 thread를 생성하고 fork하는데
+                       //이때 thread에서 pipe close까지 진행하고 fork 가는경우 당연히 file이 닫혀서 eof 가 읽히는 듯.
     sleep(4);
     read(pipefd[0], &current_tracerpid, 4);
 
