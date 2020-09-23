@@ -94,7 +94,7 @@ void* monitor(void*){
     // 3) watch
     for (i = 0; i < PATH_LEN; i++)
     {
-        int wd = inotify_add_watch(fd, g_path[i],IN_OPEN | IN_CLOSE);
+        int wd = inotify_add_watch(fd, g_path[i],IN_OPEN | IN_ACCESS);
         if (wd == -1) {
             fprintf(stderr, "[*] Cannot watch '%s': %s\n", g_path[i], strerror(errno));
             exit(EXIT_FAILURE);
