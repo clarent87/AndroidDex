@@ -18,8 +18,8 @@
 static int tids[1024];
 static int tids_size;
 /*
- * get all tids to global array(tids)
- * return : error is 0, else total size of tids
+ * save all tids to global array(tids)
+ * return :  total size of tids or 0 if error occured
  */
 static int getAllTids()
 {
@@ -48,8 +48,6 @@ static int getAllTids()
 // fd : is inotify fd
 // add_watch 실패시 wd에 -1넣은채로 그냥 진행
 // 문자열 난독화는 필요.
-// wd size는 tids*2 + 2임
-// todo: task랑 아닌쪽 두개다 걸어야함
 static int* add_watch_all(int fd){
     int *wd, pid;
     char maps_path[32];
