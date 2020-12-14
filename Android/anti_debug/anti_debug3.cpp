@@ -164,3 +164,6 @@ int _time()
 void anti_debugging6(){
     _time();
 }
+void anti_debugging7(){
+    ptrace(PTRACE_TRACEME,0,0,0);
+}
