@@ -3,20 +3,9 @@
 //
 
 
-#include "anti_debugging.h"
+#include "anti-debugging.h"
 
-JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
-{
-    JNIEnv* env;
-    if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
-        return JNI_ERR;
-    }
-
-    anti_debugging5();
-    return JNI_VERSION_1_6;
-}
-
-///////////////////////////////   1. tracepid 단일 check test.
+///////////////////////////////   1. tracepid 단일 check test. ( 적용시는 단순하게 그냥 이거 호출 tread 없이 )
 void *check_tracepid(void *) {
     char *status_path="proc/self/status";
     char readbuf[100] = { 0 };
@@ -95,7 +84,7 @@ void anti_debugging2()
     return;
 }
 
-////////////////////////////// 3. task 개수 세기
+////////////////////////////// 3. task 개수 세기 ( 이건 decrypt 같은데에다가 ? )
 int get_task_count()
 {
     DIR *dir;
@@ -132,14 +121,20 @@ void anti_debugging4(JNIEnv* env){
 }
 
 ////////////////////////////// 5. signal -일단은 mutex로..
+/**
+ * 희안하네.. ida에서 exception을 app으로 던졌는데도 핸들러 호출 안되네.. 아마 exception이랑 signal은 다른듯.
+ * 일단 ida에서 debugger options에서 signal/exception 처리 변경하면 뭐 문제 없이 우회되긴 함. ( STGTRAP은 그러함 )
+ */
 int a=0;
 void my_sigtrap(int sig)
 {
- a=1;
- LOGD("release mutex");
+    // TODO : 변수로 작업? SIGTRAP 괜찮음? 혹은 함수 포인터? ( 일단 SIGTRAP이 무난하긴 함 .. raise대신 직접 asm이용하면 좋긴 할텐데.. )
+    a=1;
+    LOGD("release mutex");
 }
 void anti_debugging5(){
     signal(SIGTRAP, my_sigtrap);
+
     raise(SIGTRAP);
     if(a)
         LOGD("MAIN LOGIC");
@@ -149,11 +144,14 @@ void anti_debugging5(){
 ////////////////////////////// 6. time base
 int _time()
 {
+    // TODO: 범위를 어떻게 정할지? 360의 내용 검토 필요 할거 같음...
     time_t t1, t2;
     time(&t1);
     /* breakpoint */
+    // 뭔가 작업..
+
     time(&t2);
-    if (t2 - t1 > 2)
+    if (t2 - t1 > 2) // 시간을 어떻게 ( 대충 30초 ?)
     {
         LOGD("debugged");
     }else{
@@ -164,6 +162,22 @@ int _time()
 void anti_debugging6(){
     _time();
 }
+
+///////////////////////////////7. anti-debugging ptrace (일단 제외, 큰 의미가 없음)
+/**
+ * 따로 so만 빼서 진행할때
+ * - 디버깅 없을시 ret은 0
+ * - 디버깅 있을시 ret은 -1
+ * 그냥 apk이용했을때
+ * - 디버깅 없을시 ret은 -1
+ * - 디버깅 있을시 ret은 -1
+ */
+
+/**
+ * 그나마 constuctor로 빼면 의미가 있을거 같긴한데..
+ */
 void anti_debugging7(){
-    ptrace(PTRACE_TRACEME,0,0,0);
+    int ret = ptrace(PTRACE_TRACEME,0,0,0); // 에러 check.
+    printf("return is %d\n",ret);
+    LOGD("retern is : %d", ret);
 }
